@@ -9,10 +9,11 @@
 */
 
 // modulo principal de la aplicación
-var app = angular.module('forshare', ['forshare.controllers']);
+var app = angular.module('forshare', ['forshare.controllers', 'forshare.services', 'ngStorage']);
 
 // configuración de las rutas para la aplicación web
-app.config(function($stateProvider, $urlRouterProvider){
+app.config(function($stateProvider, $urlRouterProvider ,$locationProvider, $httpProvider){
+
 
 	// defino las rutas de la app
 	$stateProvider
@@ -31,11 +32,31 @@ app.config(function($stateProvider, $urlRouterProvider){
 
 		.state('register',{
 			url: '/register',
-			templateUrl: 'views/home/register.tpl.html'
-			//controller: 'signupController',
-			//controllerAs: 'signup'
+			templateUrl: 'views/home/register.tpl.html',
+			controller: 'signupController',
+			controllerAs: 'signup'
 		});
 
 		$urlRouterProvider.otherwise('/');
+		//$locationProvider.html5Mode(true);
+
+		$httpProvider.interceptors.push(['$q', '$location', '$localStorage', function($q, $location, $localStorage) {
+			return {
+			        'request': function (config) {
+			            config.headers = config.headers || {};
+			            if ($localStorage.token) {
+			                config.headers.Authorization = 'Bearer ' + $localStorage.token;
+			            }
+			            return config;
+			        },
+			        'responseError': function(response) {
+			            if(response.status === 401 || response.status === 403) {
+			                $location.path('/login');
+			            }
+			            return $q.reject(response);
+			        }
+			    };
+		}]);
+
 
 });

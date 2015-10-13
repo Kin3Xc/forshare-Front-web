@@ -12,13 +12,25 @@
 var app = angular.module('forshare.controllers', ['ui.router']);
 
 // controlador HOME
-app.controller('homeController',['$scope', function($scope){
+app.controller('homeController',['$rootScope', '$scope', 'Login', function($rootScope, $scope, Login){
+
+	Login.me(function(res) {
+			$scope.perfil = res;
+			if (!res.type) {
+				console.log('No hay nadie logueado');
+			}else {
+				console.log(res.data);
+			}
+
+	}, function() {
+			$rootScope.error = 'Failed to fetch details';
+	});
+
 	console.log('Home controller');
 }]); // fin controller HOME
 
 
-app.controller('loginController', ['$scope', '$http', function($scope, $http){
-	console.log('Login Controller');
+app.controller('loginController', ['$rootScope','$scope', '$location', '$localStorage', 'Login', function($rootScope, $scope, $location, $localStorage, Login){
 
 	var vm = this;
 	var obj_login = {};
@@ -28,16 +40,73 @@ app.controller('loginController', ['$scope', '$http', function($scope, $http){
 			email: vm.email,
 			password: vm.password
 		};
-		console.log(obj_login);
 
-		$http.post('https://forshare-api.herokuapp.com/api/login')
-			.success(function(data){
-				console.log(data);
-			})
-			.error(function(err){
-				console.log('Error '+ err);
-			});
+		Login.signin(obj_login, function(res) {
+			 if (res.type == false) {
+					 alert(res.data)
+			 } else {
+					 $localStorage.token = res.data.token;
+					 console.log(res.data);
+					 //window.location = "/";
+					 $location.path('/');
+			 }
+	 }, function() {
+			 $rootScope.error = 'Failed to signin';
+	 })
+
+		console.log(obj_login);
 	}
 
 
+	vm.me = function() {
+		 Login.me(function(res) {
+				 $scope.perfil = res;
+		 }, function() {
+				 $rootScope.error = 'Failed to fetch details';
+		 })
+ };
+
+
+	vm.logout = function() {
+			 Login.logout(function() {
+					 //window.location = "/"
+					 $location.path('/');
+			 }, function() {
+					 alert("Failed to logout!");
+			 });
+	 };
+
+	vm.token = $localStorage.token;
+
+}]);
+
+
+
+app.controller('signupController', ['$rootScope','$scope', '$location', '$localStorage', 'Login', function($rootScope, $scope, $location, $localStorage, Login){
+	var vm = this;
+	var obj_signup = {};
+
+	vm.signup = function(){
+		obj_signup = {
+			nombre: vm.nombre,
+			email: vm.email,
+			password: vm.password
+		};
+
+		console.log(obj_signup);
+
+	 Login.save(obj_signup, function(res) {
+			 if (res.type == false) {
+					 alert(res.data)
+			 } else {
+					 $localStorage.token = res.data.token;
+					 //window.location = "/"
+					 $location.path('/');
+			 }
+	 }, function() {
+			 $rootScope.error = 'Failed to signup';
+	 });
+
+
+	}
 }]);
