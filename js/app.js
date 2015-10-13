@@ -9,19 +9,10 @@
 */
 
 // modulo principal de la aplicación
-var app = angular.module('forshare', ['forshare.controllers', 'forshare.services']);
+var app = angular.module('forshare', ['forshare.controllers']);
 
 // configuración de las rutas para la aplicación web
-app.config(function($stateProvider, $authProvider, $urlRouterProvider, firebaseUrl){
-	// variables de configuracion para el envio de peticiones al server
-	$authProvider.authHeader = 'Authorization';
-	$authProvider.withCredentials = false; // Send POST request with credentials
-	// parametros de configuracion
-	$authProvider.loginUrl = "https://api-tucocina.herokuapp.com/auth/login";
-
-	// configuración token local
-	$authProvider.tokenName = "token";
-	$authProvider.tokenPrefix = "TuCosina_App";
+app.config(function($stateProvider, $urlRouterProvider){
 
 	// defino las rutas de la app
 	$stateProvider
@@ -40,9 +31,9 @@ app.config(function($stateProvider, $authProvider, $urlRouterProvider, firebaseU
 
 		.state('register',{
 			url: '/register',
-			templateUrl: 'views/home/register.tpl.html',
-			controller: 'signupController',
-			controllerAs: 'signup'
+			templateUrl: 'views/home/register.tpl.html'
+			//controller: 'signupController',
+			//controllerAs: 'signup'
 		});
 
 		$urlRouterProvider.otherwise('/');
